@@ -27,6 +27,10 @@ window/size/window_height_override=720
 window/stretch/mode="viewport"
 window/stretch/scale_mode="integer"
 
+[gui]
+
+theme/custom_font="uid://cu030fbe4lsbv"
+
 [input]
 
 move_left={

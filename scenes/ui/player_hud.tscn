@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://d3bxympeeebwu"]
+
+[ext_resource type="Script" uid="uid://do7chy77iwklu" path="res://scripts/ui/player_hud.gd" id="1_e6e0b"]
+
+[node name="PlayerHud" type="CanvasLayer" unique_id=2096832732]
+script = ExtResource("1_e6e0b")
+
+[node name="StatusPanel" type="PanelContainer" parent="." unique_id=1665113383]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 104.0
+offset_bottom = 60.0
+
+[node name="Stats" type="VBoxContainer" parent="StatusPanel" unique_id=1465835095]
+layout_mode = 2
+
+[node name="HealthLabel" type="Label" parent="StatusPanel/Stats" unique_id=1667140596]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "HP 100 / 100"
+
+[node name="HealthBar" type="ProgressBar" parent="StatusPanel/Stats" unique_id=1431803767]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="StanceLabel" type="Label" parent="StatusPanel/Stats" unique_id=1189748034]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "STANCE: IDLE"
+
+[node name="NoiseLabel" type="Label" parent="StatusPanel/Stats" unique_id=1233750581]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "NOISE: 0"
+
+[node name="StatusLabel" type="Label" parent="StatusPanel/Stats" unique_id=697712130]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
