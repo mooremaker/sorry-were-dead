@@ -16,6 +16,8 @@ enum State {
 @export var chase_head_turn_distance: float = 220.0
 @export var search_head_turn_interval: float = 0.8
 
+@export_category("Health")
+@export var max_health: float = 100.0
 
 @export_category("Movement")
 @export var chase_speed: float = 80.0
@@ -50,6 +52,8 @@ var search_timer: float = 0.0
 var head_turn_timer: float = 0.0
 var attack_timer: float = 0.0
 
+var current_health: float = 100.0
+var is_dead: bool = false
 
 @onready var sight_ray: RayCast2D = $Detection/SightRay
 @onready var debug_state: Label = $Visuals/DebugState
@@ -57,9 +61,13 @@ var attack_timer: float = 0.0
 
 func _ready() -> void:
 	NoiseSystem.noise_emitted.connect(_on_noise_emitted)
-
+	current_health = max_health
+	add_to_group("infected")
 
 func _physics_process(delta: float) -> void:
+	if is_dead:
+		return
+
 	apply_gravity(delta)
 
 	attack_timer = maxf(
@@ -405,3 +413,34 @@ func update_debug_state() -> void:
 
 		State.SEARCH:
 			debug_state.text = "..."
+
+func take_damage(amount: float) -> void:
+	if is_dead:
+		return
+
+	current_health = maxf(
+		current_health - amount,
+		0.0
+	)
+
+	print(
+		"Zombie took ",
+		amount,
+		" damage. Health: ",
+		current_health
+	)
+
+	if current_health <= 0.0:
+		die()
+
+
+func die() -> void:
+	if is_dead:
+		return
+
+	is_dead = true
+	velocity = Vector2.ZERO
+
+	print("Zombie died.")
+
+	queue_free()
