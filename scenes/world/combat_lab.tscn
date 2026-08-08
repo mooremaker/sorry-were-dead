@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dybexk7c0luba"]
+
+[ext_resource type="PackedScene" uid="uid://d37j7nl4krebf" path="res://scenes/characters/sal.tscn" id="1_p6s4m"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xnnic"]
+size = Vector2(1200, 40)
+
+[node name="CombatLab" type="Node2D" unique_id=1993967684]
+
+[node name="Ground" type="StaticBody2D" parent="." unique_id=505476783]
+position = Vector2(600, 330)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=395257463]
+shape = SubResource("RectangleShape2D_xnnic")
+
+[node name="GroundVisual" type="ColorRect" parent="." unique_id=1409417608]
+offset_top = 310.0
+offset_right = 1200.0
+offset_bottom = 360.0
+
+[node name="Sal" parent="." unique_id=1229134458 instance=ExtResource("1_p6s4m")]
+position = Vector2(200, 290)

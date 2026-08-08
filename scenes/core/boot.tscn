@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://b38ts1u21dhec"]
 
-[ext_resource type="Script" path="res://scripts/core/boot.gd" id="1_boot"]
+[ext_resource type="Script" uid="uid://lrj7gfm7cqd" path="res://scripts/core/boot.gd" id="1_boot"]
 
-[node name="Boot" type="Control"]
+[node name="Boot" type="Control" unique_id=1475503019]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_boot")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=14614480]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,7 +21,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.035, 0.035, 0.045, 1)
 
-[node name="Center" type="VBoxContainer" parent="."]
+[node name="Center" type="VBoxContainer" parent="." unique_id=147685217]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -37,37 +37,37 @@ grow_vertical = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="Title" type="Label" parent="Center"]
+[node name="Title" type="Label" parent="Center" unique_id=1805184440]
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
 text = "SORRY WE'RE DEAD"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Center"]
+[node name="Subtitle" type="Label" parent="Center" unique_id=1296763345]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "REBOOT FOUNDATION 0.0.1"
 horizontal_alignment = 1
 
-[node name="Rule" type="HSeparator" parent="Center"]
+[node name="Rule" type="HSeparator" parent="Center" unique_id=1764779983]
 layout_mode = 2
 
-[node name="Description" type="Label" parent="Center"]
+[node name="Description" type="Label" parent="Center" unique_id=2054881890]
 layout_mode = 2
 text = "2D PIXEL SURVIVAL • LIVING SETTLEMENT • SERVER-AUTHORITATIVE MULTIPLAYER"
 horizontal_alignment = 1
 
-[node name="Runtime" type="Label" parent="Center"]
+[node name="Runtime" type="Label" parent="Center" unique_id=223391856]
 layout_mode = 2
 text = "Checking foundation..."
 horizontal_alignment = 1
 
-[node name="Target" type="Label" parent="Center"]
+[node name="Target" type="Label" parent="Center" unique_id=339906472]
 layout_mode = 2
 text = "WEB • WINDOWS • LINUX / RASPBERRY PI • MOBILE LATER"
 horizontal_alignment = 1
 
-[node name="Footer" type="Label" parent="Center"]
+[node name="Footer" type="Label" parent="Center" unique_id=1022415624]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Next milestone: one survivor + one zombie + one weapon."
