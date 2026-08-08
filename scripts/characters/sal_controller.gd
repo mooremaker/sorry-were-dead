@@ -21,6 +21,8 @@ extends CharacterBody2D
 @export var sprint_noise_radius: float = 190.0
 @export var footstep_interval: float = 0.35
 
+@export_category("Health")
+@export var max_health: float = 100.0
 
 var gravity: float = float(
 	ProjectSettings.get_setting("physics/2d/default_gravity")
@@ -34,12 +36,20 @@ var facing_direction: float = 1.0
 
 var footstep_timer: float = 0.0
 
+var current_health: float = 100.0
+var is_down: bool = false
 
 func _ready() -> void:
 	add_to_group("survivors")
-
+	current_health = max_health
 
 func _physics_process(delta: float) -> void:
+	if is_down:
+		velocity.x = 0.0
+		apply_gravity(delta)
+		move_and_slide()
+		return
+
 	apply_gravity(delta)
 	handle_movement(delta)
 	handle_jump()
@@ -145,3 +155,29 @@ func handle_footstep_noise(delta: float) -> void:
 
 func get_noise_level() -> float:
 	return current_noise_level
+
+func take_damage(amount: float) -> void:
+	if is_down:
+		return
+
+	current_health = maxf(
+		current_health - amount,
+		0.0
+	)
+
+	print(
+		"Sal took ",
+		amount,
+		" damage. Health: ",
+		current_health
+	)
+
+	if current_health <= 0.0:
+		become_down()
+
+
+func become_down() -> void:
+	is_down = true
+	velocity = Vector2.ZERO
+
+	print("SAL IS DOWN.")

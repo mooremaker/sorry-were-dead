@@ -28,6 +28,12 @@ enum State {
 @export var investigate_arrival_distance: float = 12.0
 
 
+@export_category("Attack")
+@export var attack_range: float = 30.0
+@export var attack_damage: float = 20.0
+@export var attack_cooldown: float = 1.2
+
+
 var gravity: float = float(
 	ProjectSettings.get_setting("physics/2d/default_gravity")
 )
@@ -39,12 +45,15 @@ var target: Node2D = null
 var state: int = State.IDLE
 
 var last_known_position: Vector2 = Vector2.ZERO
+
 var search_timer: float = 0.0
 var head_turn_timer: float = 0.0
+var attack_timer: float = 0.0
 
 
 @onready var sight_ray: RayCast2D = $Detection/SightRay
 @onready var debug_state: Label = $Visuals/DebugState
+
 
 func _ready() -> void:
 	NoiseSystem.noise_emitted.connect(_on_noise_emitted)
@@ -52,6 +61,11 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	apply_gravity(delta)
+
+	attack_timer = maxf(
+		attack_timer - delta,
+		0.0
+	)
 
 	target = get_nearest_survivor()
 
@@ -158,6 +172,10 @@ func handle_chase(delta: float) -> void:
 		target.global_position.x - global_position.x
 	)
 
+	var distance: float = global_position.distance_to(
+		target.global_position
+	)
+
 	var direction: float = get_horizontal_direction(
 		difference_x
 	)
@@ -165,11 +183,38 @@ func handle_chase(delta: float) -> void:
 	if direction != 0.0:
 		facing_direction = direction
 
+	if distance <= attack_range:
+		velocity.x = move_toward(
+			velocity.x,
+			0.0,
+			acceleration * delta
+		)
+
+		try_attack_target()
+		return
+
 	velocity.x = move_toward(
 		velocity.x,
 		direction * chase_speed,
 		acceleration * delta
 	)
+
+
+func try_attack_target() -> void:
+	if target == null:
+		return
+
+	if attack_timer > 0.0:
+		return
+
+	if not target.has_method("take_damage"):
+		return
+
+	target.take_damage(attack_damage)
+
+	attack_timer = attack_cooldown
+
+	print("Zombie attacked survivor!")
 
 
 func handle_search(delta: float) -> void:
@@ -258,8 +303,8 @@ func _on_noise_emitted(
 	if distance_to_noise > noise_radius:
 		return
 
-	# If the zombie is already actively chasing someone,
-	# footsteps and other normal noises won't distract it.
+	# Normal noises do not distract a zombie
+	# that is already actively chasing someone.
 	if state == State.CHASE:
 		return
 
@@ -345,6 +390,7 @@ func check_vision(survivor: Node2D) -> bool:
 		return false
 
 	return sight_ray.get_collider() == survivor
+
 
 func update_debug_state() -> void:
 	match state:
