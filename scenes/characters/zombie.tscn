@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://owmduvmad3rv"]
+
+[ext_resource type="Script" uid="uid://ciiun3g0b5bwx" path="res://scenes/characters/zombie_ai.gd" id="1_fccri"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fbve6"]
+size = Vector2(20, 40)
+
+[node name="Zombie" type="CharacterBody2D" unique_id=1076375490]
+script = ExtResource("1_fccri")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1533951617]
+shape = SubResource("RectangleShape2D_fbve6")
+
+[node name="Visuals" type="Node2D" parent="." unique_id=873213061]
+
+[node name="BodyVisual" type="ColorRect" parent="Visuals" unique_id=1110284335]
+offset_left = -10.0
+offset_top = -20.0
+offset_right = 10.0
+offset_bottom = 20.0
+color = Color(0.42352942, 0.5803922, 0.34117648, 1)
+
+[node name="Detection" type="Node2D" parent="." unique_id=782351360]
+
+[node name="SightRay" type="RayCast2D" parent="Detection" unique_id=198844026]
+target_position = Vector2(250, 0)

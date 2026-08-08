@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dybexk7c0luba"]
 
 [ext_resource type="PackedScene" uid="uid://d37j7nl4krebf" path="res://scenes/characters/sal.tscn" id="1_p6s4m"]
+[ext_resource type="PackedScene" uid="uid://owmduvmad3rv" path="res://scenes/characters/zombie.tscn" id="2_bfq3m"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xnnic"]
 size = Vector2(1200, 40)
@@ -17,6 +18,12 @@ shape = SubResource("RectangleShape2D_xnnic")
 offset_top = 310.0
 offset_right = 1200.0
 offset_bottom = 360.0
+color = Color(0.16078432, 0.14901961, 0.14901961, 1)
 
 [node name="Sal" parent="." unique_id=1229134458 instance=ExtResource("1_p6s4m")]
 position = Vector2(200, 290)
+
+[node name="Zombie" parent="." unique_id=1076375490 instance=ExtResource("2_bfq3m")]
+position = Vector2(500, 290)
+vision_distance = null
+vertical_vision_limit = null

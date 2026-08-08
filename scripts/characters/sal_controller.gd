@@ -22,6 +22,8 @@ var is_sprinting: bool = false
 var current_noise_level: float = 0.0
 var facing_direction: float = 1.0
 
+func _ready() -> void:
+	add_to_group("survivors")
 
 func _physics_process(delta: float) -> void:
 	apply_gravity(delta)
