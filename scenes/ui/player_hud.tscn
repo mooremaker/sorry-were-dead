@@ -30,10 +30,26 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 8
 text = "STANCE: IDLE"
 
-[node name="NoiseLabel" type="Label" parent="StatusPanel/Stats" unique_id=1233750581]
+[node name="NoiseTitle" type="Label" parent="StatusPanel/Stats" unique_id=1233750581]
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
-text = "NOISE: 0"
+text = "NOISE"
+
+[node name="NoiseBar" type="ProgressBar" parent="StatusPanel/Stats" unique_id=2095598610]
+custom_minimum_size = Vector2(150, 6)
+layout_mode = 2
+max_value = 190.0
+show_percentage = false
+
+[node name="WeaponLabel" type="Label" parent="StatusPanel/Stats" unique_id=979232542]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "PISTOL"
+
+[node name="AmmoLabel" type="Label" parent="StatusPanel/Stats" unique_id=491358549]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "8 / 24"
 
 [node name="StatusLabel" type="Label" parent="StatusPanel/Stats" unique_id=697712130]
 layout_mode = 2

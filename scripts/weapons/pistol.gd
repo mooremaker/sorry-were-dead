@@ -138,3 +138,13 @@ func finish_reload() -> void:
 		" / ",
 		reserve_ammo
 	)
+
+
+func get_ammo_text() -> String:
+	if is_reloading:
+		return "RELOADING"
+
+	return "%d / %d" % [
+		ammo_in_magazine,
+		reserve_ammo
+	]

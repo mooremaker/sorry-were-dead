@@ -1,8 +1,13 @@
 extends CanvasLayer
 
 
-var player: Node = null
+var player: CharacterBody2D = null
+var pistol: Node = null
 
+var displayed_noise: float = 0.0
+
+
+@onready var status_panel: PanelContainer = $StatusPanel
 
 @onready var health_label: Label = (
 	$StatusPanel/Stats/HealthLabel
@@ -16,8 +21,16 @@ var player: Node = null
 	$StatusPanel/Stats/StanceLabel
 )
 
-@onready var noise_label: Label = (
-	$StatusPanel/Stats/NoiseLabel
+@onready var noise_bar: ProgressBar = (
+	$StatusPanel/Stats/NoiseBar
+)
+
+@onready var weapon_label: Label = (
+	$StatusPanel/Stats/WeaponLabel
+)
+
+@onready var ammo_label: Label = (
+	$StatusPanel/Stats/AmmoLabel
 )
 
 @onready var status_label: Label = (
@@ -29,25 +42,42 @@ func _ready() -> void:
 	call_deferred("find_player")
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if player == null:
 		return
 
 	update_health()
 	update_stance()
-	update_noise()
+	update_noise(delta)
+	update_weapon()
 	update_status()
 
 
 func find_player() -> void:
-	player = get_tree().get_first_node_in_group(
+	var survivor: Node = get_tree().get_first_node_in_group(
 		"survivors"
 	)
 
+	if survivor == null:
+		return
+
+	if survivor is CharacterBody2D:
+		player = survivor as CharacterBody2D
+
+	if player != null:
+		pistol = player.get_node_or_null(
+			"WeaponSocket/Pistol"
+		)
+
 
 func update_health() -> void:
-	var current: float = player.current_health
-	var maximum: float = player.max_health
+	var current: float = float(
+		player.get("current_health")
+	)
+
+	var maximum: float = float(
+		player.get("max_health")
+	)
 
 	health_bar.max_value = maximum
 	health_bar.value = current
@@ -59,7 +89,19 @@ func update_health() -> void:
 
 
 func update_stance() -> void:
-	if player.is_down:
+	var is_down: bool = bool(
+		player.get("is_down")
+	)
+
+	var is_crouching: bool = bool(
+		player.get("is_crouching")
+	)
+
+	var is_sprinting: bool = bool(
+		player.get("is_sprinting")
+	)
+
+	if is_down:
 		stance_label.text = "STANCE: DOWN"
 		return
 
@@ -67,11 +109,11 @@ func update_stance() -> void:
 		stance_label.text = "STANCE: AIR"
 		return
 
-	if player.is_crouching:
+	if is_crouching:
 		stance_label.text = "STANCE: SNEAK"
 		return
 
-	if player.is_sprinting:
+	if is_sprinting:
 		stance_label.text = "STANCE: SPRINT"
 		return
 
@@ -82,28 +124,111 @@ func update_stance() -> void:
 	stance_label.text = "STANCE: IDLE"
 
 
-func update_noise() -> void:
-	if player.is_down:
-		noise_label.text = "NOISE: 0"
-		return
+func update_noise(delta: float) -> void:
+	var target_noise: float = 0.0
 
-	var radius: float = 0.0
+	var is_down: bool = bool(
+		player.get("is_down")
+	)
 
-	if absf(player.velocity.x) > 5.0:
-		if player.is_crouching:
-			radius = player.crouch_noise_radius
+	var is_crouching: bool = bool(
+		player.get("is_crouching")
+	)
 
-		elif player.is_sprinting:
-			radius = player.sprint_noise_radius
+	var is_sprinting: bool = bool(
+		player.get("is_sprinting")
+	)
+
+	if not is_down and absf(player.velocity.x) > 5.0:
+		if is_crouching:
+			target_noise = float(
+				player.get("crouch_noise_radius")
+			)
+
+		elif is_sprinting:
+			target_noise = float(
+				player.get("sprint_noise_radius")
+			)
 
 		else:
-			radius = player.walk_noise_radius
+			target_noise = float(
+				player.get("walk_noise_radius")
+			)
 
-	noise_label.text = "NOISE: %d" % int(radius)
+	displayed_noise = move_toward(
+		displayed_noise,
+		target_noise,
+		350.0 * delta
+	)
+
+	noise_bar.value = displayed_noise
+
+	update_noise_color()
+
+
+func update_noise_color() -> void:
+	var fill_style: StyleBoxFlat = StyleBoxFlat.new()
+
+	if displayed_noise < 70.0:
+		fill_style.bg_color = Color(
+			0.2,
+			0.85,
+			0.25,
+			1.0
+		)
+
+	elif displayed_noise < 150.0:
+		fill_style.bg_color = Color(
+			0.95,
+			0.8,
+			0.15,
+			1.0
+		)
+
+	else:
+		fill_style.bg_color = Color(
+			0.9,
+			0.15,
+			0.1,
+			1.0
+		)
+
+	noise_bar.add_theme_stylebox_override(
+		"fill",
+		fill_style
+	)
+
+
+func update_weapon() -> void:
+	if pistol == null:
+		weapon_label.visible = false
+		ammo_label.visible = false
+		return
+
+	weapon_label.visible = true
+	ammo_label.visible = true
+
+	weapon_label.text = "PISTOL"
+
+	if pistol.has_method("get_ammo_text"):
+		ammo_label.text = pistol.get_ammo_text()
 
 
 func update_status() -> void:
-	if player.is_down:
+	var is_down: bool = bool(
+		player.get("is_down")
+	)
+
+	if status_label.visible == is_down:
+		return
+
+	status_label.visible = is_down
+
+	if is_down:
 		status_label.text = "DOWNED"
 	else:
 		status_label.text = ""
+
+	status_panel.call_deferred(
+		"reset_size"
+	)
