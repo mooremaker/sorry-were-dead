@@ -37,13 +37,24 @@ var displayed_noise: float = 0.0
 	$StatusPanel/Stats/StatusLabel
 )
 
+@onready var day_label: Label = (
+	$ClockPanel/ClockStats/DayLabel
+)
+
+@onready var time_label: Label = (
+	$ClockPanel/ClockStats/TimeLabel
+)
+
 
 func _ready() -> void:
 	call_deferred("find_player")
 
 
 func _process(delta: float) -> void:
+	update_clock()
+
 	if player == null:
+		find_player()
 		return
 
 	update_health()
@@ -139,6 +150,15 @@ func update_noise(delta: float) -> void:
 		player.get("is_sprinting")
 	)
 
+	var sprint_noise: float = float(
+		player.get("sprint_noise_radius")
+	)
+
+	noise_bar.max_value = maxf(
+		sprint_noise,
+		1.0
+	)
+
 	if not is_down and absf(player.velocity.x) > 5.0:
 		if is_crouching:
 			target_noise = float(
@@ -146,9 +166,7 @@ func update_noise(delta: float) -> void:
 			)
 
 		elif is_sprinting:
-			target_noise = float(
-				player.get("sprint_noise_radius")
-			)
+			target_noise = sprint_noise
 
 		else:
 			target_noise = float(
@@ -169,7 +187,16 @@ func update_noise(delta: float) -> void:
 func update_noise_color() -> void:
 	var fill_style: StyleBoxFlat = StyleBoxFlat.new()
 
-	if displayed_noise < 70.0:
+	var maximum_noise: float = maxf(
+		float(noise_bar.max_value),
+		1.0
+	)
+
+	var noise_ratio: float = (
+		displayed_noise / maximum_noise
+	)
+
+	if noise_ratio < 0.4:
 		fill_style.bg_color = Color(
 			0.2,
 			0.85,
@@ -177,7 +204,7 @@ func update_noise_color() -> void:
 			1.0
 		)
 
-	elif displayed_noise < 150.0:
+	elif noise_ratio < 0.8:
 		fill_style.bg_color = Color(
 			0.95,
 			0.8,
@@ -232,3 +259,8 @@ func update_status() -> void:
 	status_panel.call_deferred(
 		"reset_size"
 	)
+
+
+func update_clock() -> void:
+	day_label.text = WorldClock.get_day_text()
+	time_label.text = WorldClock.get_time_text()

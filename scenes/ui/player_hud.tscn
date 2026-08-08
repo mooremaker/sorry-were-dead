@@ -54,3 +54,27 @@ text = "8 / 24"
 [node name="StatusLabel" type="Label" parent="StatusPanel/Stats" unique_id=697712130]
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
+
+[node name="ClockPanel" type="PanelContainer" parent="." unique_id=1283346087]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -120.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 48.0
+grow_horizontal = 0
+
+[node name="ClockStats" type="VBoxContainer" parent="ClockPanel" unique_id=1121764439]
+layout_mode = 2
+offset_transform_enabled = true
+
+[node name="DayLabel" type="Label" parent="ClockPanel/ClockStats" unique_id=49749951]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "DAY 1"
+
+[node name="TimeLabel" type="Label" parent="ClockPanel/ClockStats" unique_id=1652297964]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "6:00 AM"
