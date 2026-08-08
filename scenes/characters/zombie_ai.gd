@@ -44,7 +44,7 @@ var head_turn_timer: float = 0.0
 
 
 @onready var sight_ray: RayCast2D = $Detection/SightRay
-
+@onready var debug_state: Label = $Visuals/DebugState
 
 func _ready() -> void:
 	NoiseSystem.noise_emitted.connect(_on_noise_emitted)
@@ -76,6 +76,8 @@ func _physics_process(delta: float) -> void:
 
 		State.SEARCH:
 			handle_search(delta)
+
+	update_debug_state()
 
 	move_and_slide()
 
@@ -343,3 +345,17 @@ func check_vision(survivor: Node2D) -> bool:
 		return false
 
 	return sight_ray.get_collider() == survivor
+
+func update_debug_state() -> void:
+	match state:
+		State.IDLE:
+			debug_state.text = ""
+
+		State.INVESTIGATE:
+			debug_state.text = "?"
+
+		State.CHASE:
+			debug_state.text = "!"
+
+		State.SEARCH:
+			debug_state.text = "..."

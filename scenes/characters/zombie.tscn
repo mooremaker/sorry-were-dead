@@ -20,6 +20,10 @@ offset_right = 10.0
 offset_bottom = 20.0
 color = Color(0.42352942, 0.5803922, 0.34117648, 1)
 
+[node name="DebugState" type="Label" parent="Visuals" unique_id=1514135743]
+offset_right = 40.0
+offset_bottom = 23.0
+
 [node name="Detection" type="Node2D" parent="." unique_id=782351360]
 
 [node name="SightRay" type="RayCast2D" parent="Detection" unique_id=198844026]
