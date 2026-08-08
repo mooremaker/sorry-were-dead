@@ -28,6 +28,8 @@ var gravity: float = float(
 	ProjectSettings.get_setting("physics/2d/default_gravity")
 )
 
+@onready var pistol: Node2D = $WeaponSocket/Pistol
+
 var is_crouching: bool = false
 var is_sprinting: bool = false
 
@@ -47,11 +49,13 @@ func _physics_process(delta: float) -> void:
 	if is_down:
 		velocity.x = 0.0
 		apply_gravity(delta)
+		handle_weapon_input()
 		move_and_slide()
 		return
 
 	apply_gravity(delta)
 	handle_movement(delta)
+	handle_weapon_input()
 	handle_jump()
 	handle_footstep_noise(delta)
 
@@ -181,3 +185,14 @@ func become_down() -> void:
 	velocity = Vector2.ZERO
 
 	print("SAL IS DOWN.")
+
+func handle_weapon_input() -> void:
+	pistol.set_facing_direction(
+		facing_direction
+	)
+
+	if Input.is_action_pressed("attack_primary"):
+		pistol.try_fire()
+
+	if Input.is_action_just_pressed("reload"):
+		pistol.try_reload()

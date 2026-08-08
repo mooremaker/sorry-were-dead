@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cg82vxjnh242c"]
+
+[ext_resource type="Script" uid="uid://cevuw22weam2j" path="res://scripts/weapons/pistol.gd" id="1_4jni1"]
+
+[node name="Pistol" type="Node2D" unique_id=2037566767]
+script = ExtResource("1_4jni1")
+
+[node name="Muzzle" type="Marker2D" parent="." unique_id=907063948]
+position = Vector2(14, 0)
+
+[node name="BulletRay" type="RayCast2D" parent="." unique_id=1779117214]
+target_position = Vector2(500, 0)
