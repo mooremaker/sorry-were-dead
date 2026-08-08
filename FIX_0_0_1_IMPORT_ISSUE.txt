@@ -1,0 +1,23 @@
+SORRY WE'RE DEAD — FOUNDATION 0.0.2
+
+This package replaces the original hand-written project.godot with a deliberately
+minimal Godot 4.7 project file.
+
+Why:
+The previous 0.0.1 package manually serialized a large Input Map directly into
+project.godot before Godot itself had opened/saved the project. That was
+unnecessarily risky. In 0.0.2, Godot is allowed to open a minimal project first,
+then we will configure resolution/input/export settings through the editor.
+
+Recommended clean install:
+1. In Godot Project Manager, Remove Missing.
+2. Delete or rename the old C:\Dev\sorry-were-dead folder.
+3. Extract this package.
+4. Rename the extracted folder to: sorry-were-dead
+5. Confirm this exact file exists:
+   C:\Dev\sorry-were-dead\project.godot
+6. Godot > Import > select that project.godot.
+7. Import & Edit.
+8. Press F6/F5 to test the boot scene.
+
+Do not copy the old 0.0.1 project.godot back into this folder.

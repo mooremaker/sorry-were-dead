@@ -1,0 +1,28 @@
+# Godot generated/import cache
+.godot/
+.import/
+
+# Builds
+builds/*
+!builds/web/
+!builds/windows/
+builds/web/*
+builds/windows/*
+!builds/web/.gitkeep
+!builds/windows/.gitkeep
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Temporary/log files
+*.tmp
+*.log
+*.bak
+*~
+
+# Do NOT ignore export_presets.cfg.
+# We will commit export presets once Godot creates them.
