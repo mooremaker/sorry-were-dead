@@ -3,6 +3,7 @@ extends CharacterBody2D
 
 enum State {
 	IDLE,
+	INVESTIGATE,
 	CHASE,
 	SEARCH
 }
@@ -18,11 +19,13 @@ enum State {
 
 @export_category("Movement")
 @export var chase_speed: float = 80.0
+@export var investigate_speed: float = 55.0
 @export var acceleration: float = 500.0
 
 
 @export_category("Search")
 @export var search_time: float = 3.0
+@export var investigate_arrival_distance: float = 12.0
 
 
 var gravity: float = float(
@@ -43,6 +46,10 @@ var head_turn_timer: float = 0.0
 @onready var sight_ray: RayCast2D = $Detection/SightRay
 
 
+func _ready() -> void:
+	NoiseSystem.noise_emitted.connect(_on_noise_emitted)
+
+
 func _physics_process(delta: float) -> void:
 	apply_gravity(delta)
 
@@ -55,11 +62,14 @@ func _physics_process(delta: float) -> void:
 	if target != null:
 		can_see_target = check_vision(target)
 
-	update_state(can_see_target)
+	update_vision_state(can_see_target)
 
 	match state:
 		State.IDLE:
 			handle_idle(delta)
+
+		State.INVESTIGATE:
+			handle_investigate(delta)
 
 		State.CHASE:
 			handle_chase(delta)
@@ -75,12 +85,12 @@ func apply_gravity(delta: float) -> void:
 		velocity.y += gravity * delta
 
 
-func update_state(can_see_target: bool) -> void:
+func update_vision_state(can_see_target: bool) -> void:
 	if can_see_target and target != null:
 		last_known_position = target.global_position
 
 		if state != State.CHASE:
-			print("Zombie spotted survivor.")
+			print("Zombie spotted survivor!")
 
 		state = State.CHASE
 		search_timer = search_time
@@ -100,6 +110,40 @@ func handle_idle(delta: float) -> void:
 		0.0,
 		acceleration * delta
 	)
+
+
+func handle_investigate(delta: float) -> void:
+	var difference_x: float = (
+		last_known_position.x - global_position.x
+	)
+
+	var direction: float = get_horizontal_direction(
+		difference_x
+	)
+
+	if absf(difference_x) > investigate_arrival_distance:
+		if direction != 0.0:
+			facing_direction = direction
+			head_direction = direction
+
+		velocity.x = move_toward(
+			velocity.x,
+			direction * investigate_speed,
+			acceleration * delta
+		)
+
+	else:
+		velocity.x = move_toward(
+			velocity.x,
+			0.0,
+			acceleration * delta
+		)
+
+		print("Zombie reached the sound. Searching.")
+
+		state = State.SEARCH
+		search_timer = search_time
+		head_turn_timer = 0.0
 
 
 func handle_chase(delta: float) -> void:
@@ -142,7 +186,7 @@ func handle_search(delta: float) -> void:
 
 		velocity.x = move_toward(
 			velocity.x,
-			direction * chase_speed * 0.65,
+			direction * investigate_speed,
 			acceleration * delta
 		)
 
@@ -174,6 +218,18 @@ func update_head_direction(delta: float) -> void:
 			if new_direction != 0.0:
 				head_direction = new_direction
 
+	elif state == State.INVESTIGATE:
+		var difference_x: float = (
+			last_known_position.x - global_position.x
+		)
+
+		var new_direction: float = get_horizontal_direction(
+			difference_x
+		)
+
+		if new_direction != 0.0:
+			head_direction = new_direction
+
 	elif state == State.SEARCH:
 		head_turn_timer -= delta
 
@@ -183,6 +239,39 @@ func update_head_direction(delta: float) -> void:
 
 	else:
 		head_direction = facing_direction
+
+
+func _on_noise_emitted(
+	noise_position: Vector2,
+	noise_radius: float,
+	source: Node2D
+) -> void:
+	if source == self:
+		return
+
+	var distance_to_noise: float = global_position.distance_to(
+		noise_position
+	)
+
+	if distance_to_noise > noise_radius:
+		return
+
+	# If the zombie is already actively chasing someone,
+	# footsteps and other normal noises won't distract it.
+	if state == State.CHASE:
+		return
+
+	last_known_position = noise_position
+	state = State.INVESTIGATE
+
+	var direction: float = get_horizontal_direction(
+		noise_position.x - global_position.x
+	)
+
+	if direction != 0.0:
+		head_direction = direction
+
+	print("Zombie heard something!")
 
 
 func get_horizontal_direction(value: float) -> float:

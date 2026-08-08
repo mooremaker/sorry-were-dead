@@ -25,5 +25,3 @@ position = Vector2(200, 290)
 
 [node name="Zombie" parent="." unique_id=1076375490 instance=ExtResource("2_bfq3m")]
 position = Vector2(500, 290)
-vision_distance = null
-vertical_vision_limit = null

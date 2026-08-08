@@ -14,6 +14,10 @@ config/name="Sorry We're Dead"
 run/main_scene="res://scenes/core/boot.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
+[autoload]
+
+NoiseSystem="*uid://c5y88q76qw5lo"
+
 [display]
 
 window/size/viewport_width=640
