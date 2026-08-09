@@ -1,0 +1,91 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/game_over_screen.gd" id="1_gameover"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.055, 0.05, 0.055, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.08, 0.08, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="GameOverScreen" type="CanvasLayer"]
+layer = 100
+process_mode = 3
+script = ExtResource("1_gameover")
+
+[node name="Overlay" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.01, 0.01, 0.015, 0.88)
+
+[node name="CenterPanel" type="PanelContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -190.0
+offset_top = -100.0
+offset_right = 190.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Layout" type="VBoxContainer" parent="Overlay/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Title" type="Label" parent="Overlay/CenterPanel/Layout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.12, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "SORRY WE'RE DEAD"
+horizontal_alignment = 1
+
+[node name="Reason" type="Label" parent="Overlay/CenterPanel/Layout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "ALL ACTIVE SURVIVORS ARE DOWN"
+horizontal_alignment = 1
+
+[node name="SaveStatus" type="Label" parent="Overlay/CenterPanel/Layout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+theme_override_font_sizes/font_size = 7
+text = "RETURN TO YOUR LAST CHECKPOINT"
+horizontal_alignment = 1
+
+[node name="LoadButton" type="Button" parent="Overlay/CenterPanel/Layout"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "LOAD FROM LAST SAVE"
+
+[node name="QuitButton" type="Button" parent="Overlay/CenterPanel/Layout"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "QUIT"

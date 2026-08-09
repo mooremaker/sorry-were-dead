@@ -17,7 +17,9 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 [autoload]
 
 NoiseSystem="*uid://c5y88q76qw5lo"
+GameState="*res://scripts/systems/game_state.gd"
 WorldClock="*uid://cuftcavgjwn55"
+SaveSystem="*res://scripts/systems/save_system.gd"
 ZombieDirector="*res://scripts/systems/zombie_director.gd"
 
 [display]

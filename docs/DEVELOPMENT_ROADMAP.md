@@ -128,3 +128,19 @@ Before broad multiplayer content:
 Do not implement a later expansion because it sounds cool if the current vertical slice is not fun yet.
 
 **Priority question:** Does this make one day in the apocalypse more interesting?
+
+## Foundation 0.2.0 completed
+
+- 360-degree pistol and melee targeting
+- crosshair
+- multi-zombie spawning/difficulty hooks
+- combat hit flash / knockback / stagger feedback
+- prototype pistol tracer and muzzle flash
+- prototype Pizza Cutter Glaive swing arc
+- zombie death fall/fade feedback
+- all-active-players-down failure state
+- checkpoint save/load prototype
+
+### Recommended next milestone
+
+Build basic loot drops, world pickups, and a deliberately small inventory. Then use those systems in the first real scavenging route (Settlement Gate → Gas Station) before expanding into the first complete work/survival day.

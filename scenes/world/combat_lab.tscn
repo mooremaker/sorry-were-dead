@@ -4,11 +4,14 @@
 [ext_resource type="PackedScene" uid="uid://owmduvmad3rv" path="res://scenes/characters/zombie.tscn" id="2_bfq3m"]
 [ext_resource type="PackedScene" uid="uid://d3bxympeeebwu" path="res://scenes/ui/player_hud.tscn" id="3_qrk5i"]
 [ext_resource type="Script" uid="uid://cao6u1ppji57c" path="res://scripts/systems/zombie_spawner.gd" id="4_spawner"]
+[ext_resource type="Script" uid="uid://d2bsk7w04fsn5" path="res://scripts/world/combat_lab.gd" id="5_lab"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_over_screen.tscn" id="6_gameover"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xnnic"]
 size = Vector2(1200, 40)
 
 [node name="CombatLab" type="Node2D" unique_id=1993967684]
+script = ExtResource("5_lab")
 
 [node name="Ground" type="StaticBody2D" parent="." unique_id=505476783]
 position = Vector2(600, 330)
@@ -28,7 +31,7 @@ position = Vector2(200, 290)
 [node name="ZombieSpawner" type="Node2D" parent="." unique_id=1052771205]
 script = ExtResource("4_spawner")
 default_zombie_scene = ExtResource("2_bfq3m")
-max_alive_override = 10
+max_alive_override = 5
 initial_population_override = 8
 
 [node name="SpawnPoints" type="Node2D" parent="ZombieSpawner" unique_id=1235829892]
@@ -58,3 +61,5 @@ position = Vector2(1040, 290)
 position = Vector2(1160, 290)
 
 [node name="PlayerHud" parent="." unique_id=2096832732 instance=ExtResource("3_qrk5i")]
+
+[node name="GameOverScreen" parent="." unique_id=1452542271 instance=ExtResource("6_gameover")]

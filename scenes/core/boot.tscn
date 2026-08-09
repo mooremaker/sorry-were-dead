@@ -46,7 +46,7 @@ horizontal_alignment = 1
 [node name="Subtitle" type="Label" parent="Center" unique_id=1296763345]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "FOUNDATION 0.1.0"
+text = "FOUNDATION 0.2.0"
 horizontal_alignment = 1
 
 [node name="Rule" type="HSeparator" parent="Center" unique_id=1764779983]
@@ -70,5 +70,5 @@ horizontal_alignment = 1
 [node name="Footer" type="Label" parent="Center" unique_id=1022415624]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Current milestone: multi-zombie combat sandbox + living-world clock."
+text = "Current milestone: combat feedback + checkpoint/game-over loop."
 horizontal_alignment = 1

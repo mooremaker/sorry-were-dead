@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://d3bxympeeebwu"]
 
 [ext_resource type="Script" uid="uid://do7chy77iwklu" path="res://scripts/ui/player_hud.gd" id="1_e6e0b"]
+[ext_resource type="Script" uid="uid://djsexh31uwl8q" path="res://scripts/ui/crosshair.gd" id="2_31ty4"]
 
 [node name="PlayerHud" type="CanvasLayer" unique_id=2096832732]
 script = ExtResource("1_e6e0b")
@@ -78,3 +79,10 @@ text = "DAY 1"
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
 text = "6:00 AM"
+
+[node name="Crosshair" type="Control" parent="." unique_id=1848881609]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("2_31ty4")

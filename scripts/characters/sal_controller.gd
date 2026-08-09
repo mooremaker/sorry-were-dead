@@ -9,6 +9,11 @@ extends CharacterBody2D
 @export var acceleration: float = 900.0
 
 
+@export_category("Health")
+@export var max_health: float = 100.0
+@export var hurt_flash_duration: float = 0.12
+
+
 @export_category("Stealth")
 @export var crouch_noise: float = 0.2
 @export var walk_noise: float = 0.5
@@ -21,43 +26,81 @@ extends CharacterBody2D
 @export var sprint_noise_radius: float = 190.0
 @export var footstep_interval: float = 0.35
 
-@export_category("Health")
-@export var max_health: float = 100.0
 
 var gravity: float = float(
-	ProjectSettings.get_setting("physics/2d/default_gravity")
+	ProjectSettings.get_setting(
+		"physics/2d/default_gravity"
+	)
 )
 
-@onready var pistol: Node2D = $WeaponSocket/Pistol
+var current_health: float = 100.0
+var is_down: bool = false
 
 var is_crouching: bool = false
 var is_sprinting: bool = false
 
 var current_noise_level: float = 0.0
 var facing_direction: float = 1.0
-
 var footstep_timer: float = 0.0
+var hurt_stun_timer: float = 0.0
 
-var current_health: float = 100.0
-var is_down: bool = false
+var base_body_color: Color = Color.WHITE
+var hurt_flash_tween: Tween = null
+
+
+@onready var pistol: Node2D = (
+	$WeaponSocket/Pistol
+)
+
+@onready var glaive: Node2D = (
+	$WeaponSocket/PizzaCutterGlaive
+)
+
+@onready var body_visual: ColorRect = (
+	$Visuals/BodyVisual
+)
+
 
 func _ready() -> void:
 	add_to_group("survivors")
+	add_to_group("active_players")
+
 	current_health = max_health
+	base_body_color = body_visual.color
+
 
 func _physics_process(delta: float) -> void:
 	if is_down:
 		velocity.x = 0.0
+
 		apply_gravity(delta)
-		handle_weapon_input()
 		move_and_slide()
+
+		return
+
+	if hurt_stun_timer > 0.0:
+		hurt_stun_timer = maxf(
+			hurt_stun_timer - delta,
+			0.0
+		)
+
+		apply_gravity(delta)
+
+		velocity.x = move_toward(
+			velocity.x,
+			0.0,
+			acceleration * 0.35 * delta
+		)
+
+		move_and_slide()
+
 		return
 
 	apply_gravity(delta)
 	handle_movement(delta)
-	handle_weapon_input()
 	handle_jump()
 	handle_footstep_noise(delta)
+	handle_weapon_input()
 
 	move_and_slide()
 
@@ -157,35 +200,6 @@ func handle_footstep_noise(delta: float) -> void:
 	footstep_timer = footstep_interval
 
 
-func get_noise_level() -> float:
-	return current_noise_level
-
-func take_damage(amount: float) -> void:
-	if is_down:
-		return
-
-	current_health = maxf(
-		current_health - amount,
-		0.0
-	)
-
-	print(
-		"Sal took ",
-		amount,
-		" damage. Health: ",
-		current_health
-	)
-
-	if current_health <= 0.0:
-		become_down()
-
-
-func become_down() -> void:
-	is_down = true
-	velocity = Vector2.ZERO
-
-	print("SAL IS DOWN.")
-
 func handle_weapon_input() -> void:
 	var mouse_position: Vector2 = (
 		get_global_mouse_position()
@@ -200,6 +214,10 @@ func handle_weapon_input() -> void:
 		aim_direction
 	)
 
+	glaive.set_aim_direction(
+		aim_direction
+	)
+
 	if absf(aim_direction.x) > 5.0:
 		if aim_direction.x > 0.0:
 			facing_direction = 1.0
@@ -211,7 +229,102 @@ func handle_weapon_input() -> void:
 	):
 		pistol.try_fire()
 
+	if (
+		Input.is_action_just_pressed(
+			"attack_secondary"
+		)
+		or Input.is_action_just_pressed(
+			"melee"
+		)
+	):
+		glaive.try_attack()
+
 	if Input.is_action_just_pressed(
 		"reload"
 	):
 		pistol.try_reload()
+
+
+func get_noise_level() -> float:
+	return current_noise_level
+
+
+func take_damage(
+	amount: float,
+	hit_direction: Vector2 = Vector2.ZERO,
+	knockback_strength: float = 0.0,
+	stun_duration: float = 0.0
+) -> void:
+	if is_down:
+		return
+
+	current_health = maxf(
+		current_health - amount,
+		0.0
+	)
+
+	apply_damage_feedback(
+		hit_direction,
+		knockback_strength,
+		stun_duration
+	)
+
+	print(
+		"Sal took ",
+		amount,
+		" damage. Health: ",
+		current_health
+	)
+
+	if current_health <= 0.0:
+		become_down()
+
+
+func apply_damage_feedback(
+	hit_direction: Vector2,
+	knockback_strength: float,
+	stun_duration: float
+) -> void:
+	if hit_direction.length_squared() > 0.001:
+		velocity += (
+			hit_direction.normalized()
+			* knockback_strength
+		)
+
+	hurt_stun_timer = maxf(
+		hurt_stun_timer,
+		stun_duration
+	)
+
+	if hurt_flash_tween != null:
+		if hurt_flash_tween.is_valid():
+			hurt_flash_tween.kill()
+
+	body_visual.color = Color(
+		1.0,
+		0.3,
+		0.3,
+		1.0
+	)
+
+	hurt_flash_tween = create_tween()
+
+	hurt_flash_tween.tween_property(
+		body_visual,
+		"color",
+		base_body_color,
+		hurt_flash_duration
+	)
+
+
+func become_down() -> void:
+	if is_down:
+		return
+
+	is_down = true
+	velocity = Vector2.ZERO
+	current_noise_level = 0.0
+
+	print("SAL IS DOWN.")
+
+	GameState.report_active_player_state_changed()

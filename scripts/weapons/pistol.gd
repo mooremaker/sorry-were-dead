@@ -4,6 +4,8 @@ extends Node2D
 @export_category("Damage")
 @export var damage: float = 25.0
 @export var weapon_range: float = 500.0
+@export var knockback_strength: float = 55.0
+@export var hit_stun_duration: float = 0.10
 
 
 @export_category("Ammo")
@@ -17,13 +19,19 @@ extends Node2D
 @export var gunshot_noise_radius: float = 650.0
 
 
+@export_category("Prototype Feedback")
+@export var tracer_duration: float = 0.055
+@export var tracer_width: float = 1.0
+
+
 var ammo_in_magazine: int = 8
 var fire_timer: float = 0.0
 var reload_timer: float = 0.0
+var feedback_timer: float = 0.0
 
 var is_reloading: bool = false
-
 var aim_direction: Vector2 = Vector2.RIGHT
+var tracer_end: Vector2 = Vector2.RIGHT * 500.0
 
 
 @onready var bullet_ray: RayCast2D = $BulletRay
@@ -32,7 +40,6 @@ var aim_direction: Vector2 = Vector2.RIGHT
 
 func _ready() -> void:
 	ammo_in_magazine = magazine_size
-
 	exclude_survivor_from_bullet_ray()
 
 
@@ -42,6 +49,13 @@ func _process(delta: float) -> void:
 		0.0
 	)
 
+	if feedback_timer > 0.0:
+		feedback_timer = maxf(
+			feedback_timer - delta,
+			0.0
+		)
+		queue_redraw()
+
 	if is_reloading:
 		reload_timer -= delta
 
@@ -49,18 +63,41 @@ func _process(delta: float) -> void:
 			finish_reload()
 
 
-func set_aim_direction(
-	direction: Vector2
-) -> void:
+func _draw() -> void:
+	if feedback_timer <= 0.0:
+		return
+
+	draw_line(
+		muzzle.position,
+		tracer_end,
+		Color(1.0, 0.88, 0.38, 0.9),
+		tracer_width,
+		false
+	)
+
+	draw_circle(
+		muzzle.position,
+		2.5,
+		Color(1.0, 0.62, 0.12, 1.0)
+	)
+
+	draw_line(
+		muzzle.position - aim_direction.rotated(0.7) * 4.0,
+		muzzle.position + aim_direction * 6.0,
+		Color(1.0, 0.9, 0.45, 1.0),
+		1.0,
+		false
+	)
+
+
+func set_aim_direction(direction: Vector2) -> void:
 	if direction.length_squared() <= 0.001:
 		return
 
 	aim_direction = direction.normalized()
-
 	bullet_ray.target_position = (
 		aim_direction * weapon_range
 	)
-
 	muzzle.position = (
 		aim_direction * 14.0
 	)
@@ -85,19 +122,29 @@ func fire() -> void:
 	fire_timer = fire_cooldown
 
 	bullet_ray.force_raycast_update()
+	tracer_end = aim_direction * weapon_range
 
 	if bullet_ray.is_colliding():
-		var hit: Object = (
-			bullet_ray.get_collider()
+		tracer_end = to_local(
+			bullet_ray.get_collision_point()
 		)
+
+		var hit: Object = bullet_ray.get_collider()
 
 		if (
 			hit != null
 			and hit.has_method("take_damage")
 		):
-			hit.take_damage(
-				damage
+			hit.call(
+				"take_damage",
+				damage,
+				aim_direction,
+				knockback_strength,
+				hit_stun_duration
 			)
+
+	feedback_timer = tracer_duration
+	queue_redraw()
 
 	NoiseSystem.emit_noise(
 		global_position,
@@ -125,7 +172,6 @@ func try_reload() -> void:
 
 	is_reloading = true
 	reload_timer = reload_time
-
 	print("Reloading...")
 
 
@@ -133,7 +179,6 @@ func finish_reload() -> void:
 	var ammo_needed: int = (
 		magazine_size - ammo_in_magazine
 	)
-
 	var ammo_to_load: int = mini(
 		ammo_needed,
 		reserve_ammo
@@ -141,7 +186,6 @@ func finish_reload() -> void:
 
 	ammo_in_magazine += ammo_to_load
 	reserve_ammo -= ammo_to_load
-
 	is_reloading = false
 
 	print(
