@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://d37j7nl4krebf" path="res://scenes/characters/sal.tscn" id="1_p6s4m"]
 [ext_resource type="PackedScene" uid="uid://owmduvmad3rv" path="res://scenes/characters/zombie.tscn" id="2_bfq3m"]
 [ext_resource type="PackedScene" uid="uid://d3bxympeeebwu" path="res://scenes/ui/player_hud.tscn" id="3_qrk5i"]
+[ext_resource type="Script" uid="uid://cao6u1ppji57c" path="res://scripts/systems/zombie_spawner.gd" id="4_spawner"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xnnic"]
 size = Vector2(1200, 40)
@@ -24,7 +25,36 @@ color = Color(0.16078432, 0.14901961, 0.14901961, 1)
 [node name="Sal" parent="." unique_id=1229134458 instance=ExtResource("1_p6s4m")]
 position = Vector2(200, 290)
 
-[node name="Zombie" parent="." unique_id=1076375490 instance=ExtResource("2_bfq3m")]
-position = Vector2(500, 290)
+[node name="ZombieSpawner" type="Node2D" parent="." unique_id=1052771205]
+script = ExtResource("4_spawner")
+default_zombie_scene = ExtResource("2_bfq3m")
+max_alive_override = 10
+initial_population_override = 8
+
+[node name="SpawnPoints" type="Node2D" parent="ZombieSpawner" unique_id=1235829892]
+
+[node name="Spawn01" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1551050960]
+position = Vector2(40, 290)
+
+[node name="Spawn02" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=266438091]
+position = Vector2(480, 290)
+
+[node name="Spawn03" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=128962203]
+position = Vector2(580, 290)
+
+[node name="Spawn04" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1539119420]
+position = Vector2(680, 290)
+
+[node name="Spawn05" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1650937546]
+position = Vector2(800, 290)
+
+[node name="Spawn06" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1030047694]
+position = Vector2(920, 290)
+
+[node name="Spawn07" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1065841350]
+position = Vector2(1040, 290)
+
+[node name="Spawn08" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=412791586]
+position = Vector2(1160, 290)
 
 [node name="PlayerHud" parent="." unique_id=2096832732 instance=ExtResource("3_qrk5i")]

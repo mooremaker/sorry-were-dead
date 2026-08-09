@@ -187,12 +187,31 @@ func become_down() -> void:
 	print("SAL IS DOWN.")
 
 func handle_weapon_input() -> void:
-	pistol.set_facing_direction(
-		facing_direction
+	var mouse_position: Vector2 = (
+		get_global_mouse_position()
 	)
 
-	if Input.is_action_pressed("attack_primary"):
+	var aim_direction: Vector2 = (
+		mouse_position
+		- pistol.global_position
+	)
+
+	pistol.set_aim_direction(
+		aim_direction
+	)
+
+	if absf(aim_direction.x) > 5.0:
+		if aim_direction.x > 0.0:
+			facing_direction = 1.0
+		else:
+			facing_direction = -1.0
+
+	if Input.is_action_just_pressed(
+		"attack_primary"
+	):
 		pistol.try_fire()
 
-	if Input.is_action_just_pressed("reload"):
+	if Input.is_action_just_pressed(
+		"reload"
+	):
 		pistol.try_reload()

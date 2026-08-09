@@ -18,12 +18,12 @@ extends Node2D
 
 
 var ammo_in_magazine: int = 8
-
 var fire_timer: float = 0.0
 var reload_timer: float = 0.0
 
 var is_reloading: bool = false
-var facing_direction: float = 1.0
+
+var aim_direction: Vector2 = Vector2.RIGHT
 
 
 @onready var bullet_ray: RayCast2D = $BulletRay
@@ -32,6 +32,8 @@ var facing_direction: float = 1.0
 
 func _ready() -> void:
 	ammo_in_magazine = magazine_size
+
+	exclude_survivor_from_bullet_ray()
 
 
 func _process(delta: float) -> void:
@@ -47,18 +49,21 @@ func _process(delta: float) -> void:
 			finish_reload()
 
 
-func set_facing_direction(direction: float) -> void:
-	if direction == 0.0:
+func set_aim_direction(
+	direction: Vector2
+) -> void:
+	if direction.length_squared() <= 0.001:
 		return
 
-	facing_direction = direction
+	aim_direction = direction.normalized()
 
-	bullet_ray.target_position = Vector2(
-		weapon_range * facing_direction,
-		0.0
+	bullet_ray.target_position = (
+		aim_direction * weapon_range
 	)
 
-	muzzle.position.x = 14.0 * facing_direction
+	muzzle.position = (
+		aim_direction * 14.0
+	)
 
 
 func try_fire() -> void:
@@ -82,10 +87,17 @@ func fire() -> void:
 	bullet_ray.force_raycast_update()
 
 	if bullet_ray.is_colliding():
-		var hit: Object = bullet_ray.get_collider()
+		var hit: Object = (
+			bullet_ray.get_collider()
+		)
 
-		if hit != null and hit.has_method("take_damage"):
-			hit.take_damage(damage)
+		if (
+			hit != null
+			and hit.has_method("take_damage")
+		):
+			hit.take_damage(
+				damage
+			)
 
 	NoiseSystem.emit_noise(
 		global_position,
@@ -148,3 +160,16 @@ func get_ammo_text() -> String:
 		ammo_in_magazine,
 		reserve_ammo
 	]
+
+
+func exclude_survivor_from_bullet_ray() -> void:
+	var node: Node = get_parent()
+
+	while node != null:
+		if node is CharacterBody2D:
+			bullet_ray.add_exception(
+				node as CollisionObject2D
+			)
+			return
+
+		node = node.get_parent()
