@@ -1,6 +1,11 @@
 extends CharacterBody2D
 
 
+const ITEM_PICKUP_SCENE: PackedScene = preload(
+	"res://scenes/items/item_pickup.tscn"
+)
+
+
 enum State {
 	IDLE,
 	INVESTIGATE,
@@ -51,11 +56,24 @@ enum State {
 @export var attack_stun: float = 0.12
 
 
+@export_category("Loot")
+
+# Overall chance that a zombie drops anything.
+# 0.45 = 45%.
+@export_range(0.0, 1.0, 0.05)
+var loot_drop_chance: float = 0.45
+
+# Moves the dropped item slightly downward from
+# the zombie's center.
+@export var loot_drop_offset_y: float = 8.0
+
+
 var gravity: float = float(
 	ProjectSettings.get_setting(
 		"physics/2d/default_gravity"
 	)
 )
+
 
 var facing_direction: float = 1.0
 var head_direction: float = 1.0
@@ -76,12 +94,18 @@ var is_dead: bool = false
 var base_body_color: Color = Color.WHITE
 var hit_flash_tween: Tween = null
 
+
 var wander_origin: Vector2 = Vector2.ZERO
 var wander_direction: float = 1.0
 var wander_timer: float = 0.0
 var wander_is_moving: bool = false
 
+
 var wander_random: RandomNumberGenerator = (
+	RandomNumberGenerator.new()
+)
+
+var loot_random: RandomNumberGenerator = (
 	RandomNumberGenerator.new()
 )
 
@@ -118,6 +142,7 @@ func _ready() -> void:
 	add_to_group("infected")
 
 	wander_random.randomize()
+	loot_random.randomize()
 
 	call_deferred(
 		"initialize_wandering"
@@ -159,8 +184,6 @@ func _physics_process(delta: float) -> void:
 
 	target = get_nearest_survivor()
 
-	update_head_direction(delta)
-
 	var can_see_target: bool = false
 
 	if target != null:
@@ -172,18 +195,30 @@ func _physics_process(delta: float) -> void:
 		can_see_target
 	)
 
+	update_head_direction(
+		delta
+	)
+
 	match state:
 		State.IDLE:
-			handle_idle(delta)
+			handle_idle(
+				delta
+			)
 
 		State.INVESTIGATE:
-			handle_investigate(delta)
+			handle_investigate(
+				delta
+			)
 
 		State.CHASE:
-			handle_chase(delta)
+			handle_chase(
+				delta
+			)
 
 		State.SEARCH:
-			handle_search(delta)
+			handle_search(
+				delta
+			)
 
 	update_debug_state()
 
@@ -195,33 +230,9 @@ func apply_gravity(delta: float) -> void:
 		velocity.y += gravity * delta
 
 
-func update_vision_state(
-	can_see_target: bool
-) -> void:
-	if can_see_target and target != null:
-		last_known_position = (
-			target.global_position
-		)
-
-		if state != State.CHASE:
-			print(
-				"Zombie spotted survivor!"
-			)
-
-		state = State.CHASE
-		search_timer = search_time
-
-		return
-
-	if state == State.CHASE:
-		print(
-			"Zombie lost sight. Searching."
-		)
-
-		state = State.SEARCH
-		search_timer = search_time
-		head_turn_timer = 0.0
-
+# ---------------------------------------------------------
+# IDLE / WANDERING
+# ---------------------------------------------------------
 
 func handle_idle(delta: float) -> void:
 	wander_timer -= delta
@@ -269,33 +280,29 @@ func handle_idle(delta: float) -> void:
 func start_wander_move() -> void:
 	wander_is_moving = true
 
-	var direction_roll: float = (
-		wander_random.randf()
-	)
-
-	if direction_roll < 0.5:
+	if wander_random.randf() < 0.5:
 		wander_direction = -1.0
 	else:
 		wander_direction = 1.0
 
-	wander_timer = (
-		wander_random.randf_range(
-			wander_move_time_min,
-			wander_move_time_max
-		)
+	wander_timer = wander_random.randf_range(
+		wander_move_time_min,
+		wander_move_time_max
 	)
 
 
 func start_wander_pause() -> void:
 	wander_is_moving = false
 
-	wander_timer = (
-		wander_random.randf_range(
-			wander_pause_time_min,
-			wander_pause_time_max
-		)
+	wander_timer = wander_random.randf_range(
+		wander_pause_time_min,
+		wander_pause_time_max
 	)
 
+
+# ---------------------------------------------------------
+# INVESTIGATING SOUNDS
+# ---------------------------------------------------------
 
 func handle_investigate(
 	delta: float
@@ -341,7 +348,13 @@ func handle_investigate(
 		head_turn_timer = 0.0
 
 
-func handle_chase(delta: float) -> void:
+# ---------------------------------------------------------
+# CHASE / ATTACK
+# ---------------------------------------------------------
+
+func handle_chase(
+	delta: float
+) -> void:
 	if target == null:
 		state = State.SEARCH
 		search_timer = search_time
@@ -434,7 +447,13 @@ func try_attack_target() -> void:
 	)
 
 
-func handle_search(delta: float) -> void:
+# ---------------------------------------------------------
+# SEARCH
+# ---------------------------------------------------------
+
+func handle_search(
+	delta: float
+) -> void:
 	search_timer -= delta
 
 	var difference_x: float = (
@@ -470,151 +489,49 @@ func handle_search(delta: float) -> void:
 		)
 
 		state = State.IDLE
+
 		head_direction = facing_direction
 
+		# Begin wandering around wherever the zombie
+		# finished its search.
 		wander_origin = global_position
 
 		start_wander_pause()
 
 
-func update_head_direction(
-	delta: float
+# ---------------------------------------------------------
+# VISION
+# ---------------------------------------------------------
+
+func update_vision_state(
+	can_see_target: bool
 ) -> void:
 	if (
-		state == State.CHASE
+		can_see_target
 		and target != null
 	):
-		var difference_x: float = (
-			target.global_position.x
-			- global_position.x
+		last_known_position = (
+			target.global_position
 		)
 
-		if (
-			absf(difference_x)
-			<= chase_head_turn_distance
-		):
-			var new_direction: float = (
-				get_horizontal_direction(
-					difference_x
-				)
+		if state != State.CHASE:
+			print(
+				"Zombie spotted survivor!"
 			)
 
-			if new_direction != 0.0:
-				head_direction = new_direction
+		state = State.CHASE
+		search_timer = search_time
 
-	elif state == State.INVESTIGATE:
-		var difference_x: float = (
-			last_known_position.x
-			- global_position.x
-		)
-
-		var new_direction: float = (
-			get_horizontal_direction(
-				difference_x
-			)
-		)
-
-		if new_direction != 0.0:
-			head_direction = new_direction
-
-	elif state == State.SEARCH:
-		head_turn_timer -= delta
-
-		if head_turn_timer <= 0.0:
-			head_direction *= -1.0
-
-			head_turn_timer = (
-				search_head_turn_interval
-			)
-
-	else:
-		head_direction = facing_direction
-
-
-func _on_noise_emitted(
-	noise_position: Vector2,
-	noise_radius: float,
-	source: Node2D
-) -> void:
-	if source == self:
-		return
-
-	var distance_to_noise: float = (
-		global_position.distance_to(
-			noise_position
-		)
-	)
-
-	if distance_to_noise > noise_radius:
 		return
 
 	if state == State.CHASE:
-		return
-
-	last_known_position = noise_position
-	state = State.INVESTIGATE
-
-	var direction: float = (
-		get_horizontal_direction(
-			noise_position.x
-			- global_position.x
-		)
-	)
-
-	if direction != 0.0:
-		head_direction = direction
-
-	print(
-		"Zombie heard something!"
-	)
-
-
-func get_horizontal_direction(
-	value: float
-) -> float:
-	if value > 0.0:
-		return 1.0
-
-	if value < 0.0:
-		return -1.0
-
-	return 0.0
-
-
-func get_nearest_survivor() -> Node2D:
-	var survivors: Array[Node] = (
-		get_tree().get_nodes_in_group(
-			"survivors"
-		)
-	)
-
-	var closest_survivor: Node2D = null
-	var closest_distance: float = INF
-
-	for survivor: Node in survivors:
-		if not survivor is Node2D:
-			continue
-
-		if bool(
-			survivor.get("is_down")
-		):
-			continue
-
-		var survivor_2d: Node2D = (
-			survivor as Node2D
+		print(
+			"Zombie lost sight. Searching."
 		)
 
-		var distance: float = (
-			global_position.distance_to(
-				survivor_2d.global_position
-			)
-		)
-
-		if distance < closest_distance:
-			closest_distance = distance
-			closest_survivor = survivor_2d
-
-	return closest_survivor
+		state = State.SEARCH
+		search_timer = search_time
+		head_turn_timer = 0.0
 
 
 func check_vision(
@@ -673,6 +590,165 @@ func check_vision(
 	)
 
 
+func update_head_direction(
+	delta: float
+) -> void:
+	if (
+		state == State.CHASE
+		and target != null
+	):
+		var difference_x: float = (
+			target.global_position.x
+			- global_position.x
+		)
+
+		if (
+			absf(difference_x)
+			<= chase_head_turn_distance
+		):
+			var new_direction: float = (
+				get_horizontal_direction(
+					difference_x
+				)
+			)
+
+			if new_direction != 0.0:
+				head_direction = new_direction
+
+	elif state == State.INVESTIGATE:
+		var difference_x: float = (
+			last_known_position.x
+			- global_position.x
+		)
+
+		var new_direction: float = (
+			get_horizontal_direction(
+				difference_x
+			)
+		)
+
+		if new_direction != 0.0:
+			head_direction = new_direction
+
+	elif state == State.SEARCH:
+		head_turn_timer -= delta
+
+		if head_turn_timer <= 0.0:
+			head_direction *= -1.0
+
+			head_turn_timer = (
+				search_head_turn_interval
+			)
+
+	else:
+		head_direction = facing_direction
+
+
+# ---------------------------------------------------------
+# HEARING
+# ---------------------------------------------------------
+
+func _on_noise_emitted(
+	noise_position: Vector2,
+	noise_radius: float,
+	source: Node2D
+) -> void:
+	if is_dead:
+		return
+
+	if source == self:
+		return
+
+	var distance_to_noise: float = (
+		global_position.distance_to(
+			noise_position
+		)
+	)
+
+	if distance_to_noise > noise_radius:
+		return
+
+	if state == State.CHASE:
+		return
+
+	last_known_position = noise_position
+	state = State.INVESTIGATE
+
+	var direction: float = (
+		get_horizontal_direction(
+			noise_position.x
+			- global_position.x
+		)
+	)
+
+	if direction != 0.0:
+		head_direction = direction
+
+	print(
+		"Zombie heard something!"
+	)
+
+
+# ---------------------------------------------------------
+# SURVIVOR TARGETING
+# ---------------------------------------------------------
+
+func get_nearest_survivor() -> Node2D:
+	var survivors: Array[Node] = (
+		get_tree().get_nodes_in_group(
+			"survivors"
+		)
+	)
+
+	var closest_survivor: Node2D = null
+	var closest_distance: float = INF
+
+	for survivor: Node in survivors:
+		if not survivor is Node2D:
+			continue
+
+		var survivor_2d: Node2D = (
+			survivor as Node2D
+		)
+
+		var survivor_is_down: bool = bool(
+			survivor_2d.get(
+				"is_down"
+			)
+		)
+
+		if survivor_is_down:
+			continue
+
+		var distance: float = (
+			global_position.distance_to(
+				survivor_2d.global_position
+			)
+		)
+
+		if distance < closest_distance:
+			closest_distance = distance
+			closest_survivor = survivor_2d
+
+	return closest_survivor
+
+
+func get_horizontal_direction(
+	value: float
+) -> float:
+	if value > 0.0:
+		return 1.0
+
+	if value < 0.0:
+		return -1.0
+
+	return 0.0
+
+
+# ---------------------------------------------------------
+# DEBUG STATE
+# ---------------------------------------------------------
+
 func update_debug_state() -> void:
 	match state:
 		State.IDLE:
@@ -687,6 +763,10 @@ func update_debug_state() -> void:
 		State.SEARCH:
 			debug_state.text = "..."
 
+
+# ---------------------------------------------------------
+# DAMAGE / HIT FEEDBACK
+# ---------------------------------------------------------
 
 func take_damage(
 	amount: float,
@@ -759,6 +839,174 @@ func apply_hit_feedback(
 	)
 
 
+# ---------------------------------------------------------
+# RANDOM LOOT
+# ---------------------------------------------------------
+
+func try_drop_loot() -> void:
+	# First roll:
+	# Does this zombie drop anything?
+	if loot_random.randf() > loot_drop_chance:
+		return
+
+	# Second roll:
+	# Which item drops?
+	var roll: float = (
+		loot_random.randf()
+		* 100.0
+	)
+
+	var item_id: String = "scrap"
+	var display_name: String = "Scrap"
+	var amount: int = 1
+
+	var item_color: Color = Color(
+		0.9,
+		0.75,
+		0.2,
+		1.0
+	)
+
+	# 35% of successful drops
+	if roll < 35.0:
+		item_id = "scrap"
+		display_name = "Scrap"
+
+		amount = loot_random.randi_range(
+			1,
+			3
+		)
+
+		item_color = Color(
+			0.9,
+			0.75,
+			0.2,
+			1.0
+		)
+
+	# 25%
+	elif roll < 60.0:
+		item_id = "9mm_ammo"
+		display_name = "9mm Ammo"
+
+		amount = loot_random.randi_range(
+			2,
+			6
+		)
+
+		item_color = Color(
+			0.85,
+			0.2,
+			0.15,
+			1.0
+		)
+
+	# 18%
+	elif roll < 78.0:
+		item_id = "bottled_water"
+		display_name = "Bottled Water"
+		amount = 1
+
+		item_color = Color(
+			0.2,
+			0.55,
+			1.0,
+			1.0
+		)
+
+	# 14%
+	elif roll < 92.0:
+		item_id = "canned_food"
+		display_name = "Canned Food"
+		amount = 1
+
+		item_color = Color(
+			0.95,
+			0.5,
+			0.15,
+			1.0
+		)
+
+	# 8%
+	else:
+		item_id = "medicine"
+		display_name = "Medicine"
+		amount = 1
+
+		item_color = Color(
+			0.2,
+			0.85,
+			0.35,
+			1.0
+		)
+
+	spawn_loot_pickup(
+		item_id,
+		display_name,
+		amount,
+		item_color
+	)
+
+
+func spawn_loot_pickup(
+	item_id: String,
+	display_name: String,
+	amount: int,
+	item_color: Color
+) -> void:
+	var pickup_instance: Node = (
+		ITEM_PICKUP_SCENE.instantiate()
+	)
+
+	if not pickup_instance is Node2D:
+		pickup_instance.queue_free()
+		return
+
+	var pickup: Node2D = (
+		pickup_instance as Node2D
+	)
+
+	var world: Node = get_parent()
+
+	if world == null:
+		pickup.queue_free()
+		return
+
+	if pickup.has_method(
+		"setup_item"
+	):
+		pickup.call(
+			"setup_item",
+			item_id,
+			display_name,
+			amount,
+			item_color
+		)
+
+	world.add_child(
+		pickup
+	)
+
+	pickup.global_position = (
+		global_position
+		+ Vector2(
+			0.0,
+			loot_drop_offset_y
+		)
+	)
+
+	print(
+		"Zombie dropped ",
+		amount,
+		" x ",
+		item_id
+	)
+
+
+# ---------------------------------------------------------
+# DEATH
+# ---------------------------------------------------------
+
 func die() -> void:
 	if is_dead:
 		return
@@ -776,6 +1024,9 @@ func die() -> void:
 	)
 
 	debug_state.text = ""
+
+	# Roll the loot table once when the zombie dies.
+	try_drop_loot()
 
 	var fall_rotation: float = 1.35
 

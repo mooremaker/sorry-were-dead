@@ -6,60 +6,71 @@
 [ext_resource type="Script" uid="uid://cao6u1ppji57c" path="res://scripts/systems/zombie_spawner.gd" id="4_spawner"]
 [ext_resource type="Script" uid="uid://d2bsk7w04fsn5" path="res://scripts/world/combat_lab.gd" id="5_lab"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_over_screen.tscn" id="6_gameover"]
+[ext_resource type="PackedScene" uid="uid://bvfhkiawaukrg" path="res://scenes/items/item_pickup.tscn" id="7_tg01g"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xnnic"]
-size = Vector2(1200, 40)
+size = Vector2(3000, 29)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ck2em"]
+size = Vector2(40, 1200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fbve6"]
+size = Vector2(40, 1200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2k7rf"]
+size = Vector2(3200, 100)
 
 [node name="CombatLab" type="Node2D" unique_id=1993967684]
+position = Vector2(-45, 202)
 script = ExtResource("5_lab")
 
 [node name="Ground" type="StaticBody2D" parent="." unique_id=505476783]
-position = Vector2(600, 330)
+position = Vector2(322, 330)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=395257463]
+position = Vector2(1, 5)
 shape = SubResource("RectangleShape2D_xnnic")
 
+[node name="LeftBoundary" type="StaticBody2D" parent="." unique_id=391164466]
+position = Vector2(-736, 18)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftBoundary" unique_id=1454715412]
+shape = SubResource("RectangleShape2D_ck2em")
+
+[node name="RightBoundary" type="StaticBody2D" parent="." unique_id=1824521019]
+position = Vector2(953, 30)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightBoundary" unique_id=757823573]
+shape = SubResource("RectangleShape2D_fbve6")
+
 [node name="GroundVisual" type="ColorRect" parent="." unique_id=1409417608]
-offset_top = 310.0
-offset_right = 1200.0
-offset_bottom = 360.0
+offset_left = -1186.0
+offset_top = 320.0
+offset_right = 1814.0
+offset_bottom = 820.0
 color = Color(0.16078432, 0.14901961, 0.14901961, 1)
+metadata/_edit_use_anchors_ = true
 
 [node name="Sal" parent="." unique_id=1229134458 instance=ExtResource("1_p6s4m")]
+z_index = 1
 position = Vector2(200, 290)
 
 [node name="ZombieSpawner" type="Node2D" parent="." unique_id=1052771205]
+z_index = 1
 script = ExtResource("4_spawner")
 default_zombie_scene = ExtResource("2_bfq3m")
-max_alive_override = 5
+max_alive_override = 10
 initial_population_override = 8
-
-[node name="SpawnPoints" type="Node2D" parent="ZombieSpawner" unique_id=1235829892]
-
-[node name="Spawn01" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1551050960]
-position = Vector2(40, 290)
-
-[node name="Spawn02" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=266438091]
-position = Vector2(480, 290)
-
-[node name="Spawn03" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=128962203]
-position = Vector2(580, 290)
-
-[node name="Spawn04" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1539119420]
-position = Vector2(680, 290)
-
-[node name="Spawn05" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1650937546]
-position = Vector2(800, 290)
-
-[node name="Spawn06" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1030047694]
-position = Vector2(920, 290)
-
-[node name="Spawn07" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=1065841350]
-position = Vector2(1040, 290)
-
-[node name="Spawn08" type="Marker2D" parent="ZombieSpawner/SpawnPoints" unique_id=412791586]
-position = Vector2(1160, 290)
 
 [node name="PlayerHud" parent="." unique_id=2096832732 instance=ExtResource("3_qrk5i")]
 
 [node name="GameOverScreen" parent="." unique_id=1452542271 instance=ExtResource("6_gameover")]
+
+[node name="ItemPickup" parent="." unique_id=1813674695 instance=ExtResource("7_tg01g")]
+position = Vector2(296, 316)
+
+[node name="FallRescueZone" type="Area2D" parent="." unique_id=1102962035]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FallRescueZone" unique_id=839576560]
+position = Vector2(307, 905)
+shape = SubResource("RectangleShape2D_2k7rf")

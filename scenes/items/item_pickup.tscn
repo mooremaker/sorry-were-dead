@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://bvfhkiawaukrg"]
+
+[ext_resource type="Script" uid="uid://b535w36n4s4d6" path="res://scripts/items/item_pickup.gd" id="1_72j5x"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_e8f3i"]
+size = Vector2(16, 16)
+
+[node name="ItemPickup" type="Area2D" unique_id=1813674695]
+z_index = 20
+script = ExtResource("1_72j5x")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2124035981]
+shape = SubResource("RectangleShape2D_e8f3i")
+
+[node name="Visuals" type="Node2D" parent="." unique_id=1496106679]
+
+[node name="BodyVisual" type="ColorRect" parent="Visuals" unique_id=2116618053]
+offset_left = -6.0
+offset_top = -6.0
+offset_right = 6.0
+offset_bottom = 6.0
+color = Color(1, 0.43333334, 0, 1)
+
+[node name="PickupLabel" type="Label" parent="." unique_id=1116459220]
+visible = false
+theme_override_font_sizes/font_size = 8
+text = "E - PICK UP"

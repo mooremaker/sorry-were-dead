@@ -86,3 +86,34 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("2_31ty4")
+
+[node name="InventoryPanel" type="PanelContainer" parent="." unique_id=1329532692]
+visible = false
+custom_minimum_size = Vector2(250, 170)
+offset_left = 375.0
+offset_top = 70.0
+offset_right = 495.0
+offset_bottom = 114.0
+
+[node name="InventoryStats" type="VBoxContainer" parent="InventoryPanel" unique_id=513994920]
+layout_mode = 2
+
+[node name="InventoryTitle" type="Label" parent="InventoryPanel/InventoryStats" unique_id=608657754]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "INVENTORY"
+
+[node name="SlotLabel" type="Label" parent="InventoryPanel/InventoryStats" unique_id=1862682563]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "SLOTS: 0 / 8"
+
+[node name="InventoryContents" type="Label" parent="InventoryPanel/InventoryStats" unique_id=120908176]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "EMPTY"
+
+[node name="InventoryHint" type="Label" parent="InventoryPanel/InventoryStats" unique_id=1248220674]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "TAB / I - CLOSE"

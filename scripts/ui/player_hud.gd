@@ -3,11 +3,14 @@ extends CanvasLayer
 
 var player: CharacterBody2D = null
 var pistol: Node = null
+var inventory: Node = null
 
 var displayed_noise: float = 0.0
 
 
-@onready var status_panel: PanelContainer = $StatusPanel
+@onready var status_panel: PanelContainer = (
+	$StatusPanel
+)
 
 @onready var health_label: Label = (
 	$StatusPanel/Stats/HealthLabel
@@ -37,6 +40,7 @@ var displayed_noise: float = 0.0
 	$StatusPanel/Stats/StatusLabel
 )
 
+
 @onready var day_label: Label = (
 	$ClockPanel/ClockStats/DayLabel
 )
@@ -46,8 +50,25 @@ var displayed_noise: float = 0.0
 )
 
 
+@onready var inventory_panel: PanelContainer = (
+	$InventoryPanel
+)
+
+@onready var slot_label: Label = (
+	$InventoryPanel/InventoryStats/SlotLabel
+)
+
+@onready var inventory_contents: Label = (
+	$InventoryPanel/InventoryStats/InventoryContents
+)
+
+
 func _ready() -> void:
-	call_deferred("find_player")
+	inventory_panel.visible = false
+
+	call_deferred(
+		"find_player"
+	)
 
 
 func _process(delta: float) -> void:
@@ -63,10 +84,42 @@ func _process(delta: float) -> void:
 	update_weapon()
 	update_status()
 
+	if inventory_panel.visible:
+		update_inventory_display()
+
+
+func _input(event: InputEvent) -> void:
+	if not event.is_action_pressed(
+		"inventory"
+	):
+		return
+
+	if event is InputEventKey:
+		var key_event: InputEventKey = (
+			event as InputEventKey
+		)
+
+		if key_event.echo:
+			return
+
+	inventory_panel.visible = (
+		not inventory_panel.visible
+	)
+
+	print(
+		"Inventory toggled: ",
+		inventory_panel.visible
+	)
+
+	if inventory_panel.visible:
+		update_inventory_display()
+
 
 func find_player() -> void:
-	var survivor: Node = get_tree().get_first_node_in_group(
-		"survivors"
+	var survivor: Node = (
+		get_tree().get_first_node_in_group(
+			"survivors"
+		)
 	)
 
 	if survivor == null:
@@ -75,19 +128,73 @@ func find_player() -> void:
 	if survivor is CharacterBody2D:
 		player = survivor as CharacterBody2D
 
-	if player != null:
-		pistol = player.get_node_or_null(
-			"WeaponSocket/Pistol"
+	if player == null:
+		return
+
+	pistol = player.get_node_or_null(
+		"WeaponSocket/Pistol"
+	)
+
+	inventory = player.get_node_or_null(
+		"Inventory"
+	)
+
+
+func update_inventory_display() -> void:
+	if inventory == null:
+		slot_label.text = "SLOTS: 0 / 0"
+		inventory_contents.text = "NO INVENTORY"
+		return
+
+	if inventory.has_method(
+		"get_used_slots"
+	):
+		var used_slots: int = int(
+			inventory.call(
+				"get_used_slots"
+			)
+		)
+
+		var maximum_slots: int = 0
+
+		if inventory.has_method(
+			"get_max_slots"
+		):
+			maximum_slots = int(
+				inventory.call(
+					"get_max_slots"
+				)
+			)
+
+		slot_label.text = (
+			"SLOTS: %d / %d"
+			% [
+				used_slots,
+				maximum_slots
+			]
+		)
+
+	if inventory.has_method(
+		"get_inventory_text"
+	):
+		inventory_contents.text = str(
+			inventory.call(
+				"get_inventory_text"
+			)
 		)
 
 
 func update_health() -> void:
 	var current: float = float(
-		player.get("current_health")
+		player.get(
+			"current_health"
+		)
 	)
 
 	var maximum: float = float(
-		player.get("max_health")
+		player.get(
+			"max_health"
+		)
 	)
 
 	health_bar.max_value = maximum
@@ -95,21 +202,30 @@ func update_health() -> void:
 
 	health_label.text = (
 		"HP %d / %d"
-		% [int(current), int(maximum)]
+		% [
+			int(current),
+			int(maximum)
+		]
 	)
 
 
 func update_stance() -> void:
 	var is_down: bool = bool(
-		player.get("is_down")
+		player.get(
+			"is_down"
+		)
 	)
 
 	var is_crouching: bool = bool(
-		player.get("is_crouching")
+		player.get(
+			"is_crouching"
+		)
 	)
 
 	var is_sprinting: bool = bool(
-		player.get("is_sprinting")
+		player.get(
+			"is_sprinting"
+		)
 	)
 
 	if is_down:
@@ -139,19 +255,27 @@ func update_noise(delta: float) -> void:
 	var target_noise: float = 0.0
 
 	var is_down: bool = bool(
-		player.get("is_down")
+		player.get(
+			"is_down"
+		)
 	)
 
 	var is_crouching: bool = bool(
-		player.get("is_crouching")
+		player.get(
+			"is_crouching"
+		)
 	)
 
 	var is_sprinting: bool = bool(
-		player.get("is_sprinting")
+		player.get(
+			"is_sprinting"
+		)
 	)
 
 	var sprint_noise: float = float(
-		player.get("sprint_noise_radius")
+		player.get(
+			"sprint_noise_radius"
+		)
 	)
 
 	noise_bar.max_value = maxf(
@@ -159,10 +283,17 @@ func update_noise(delta: float) -> void:
 		1.0
 	)
 
-	if not is_down and absf(player.velocity.x) > 5.0:
+	if (
+		not is_down
+		and absf(
+			player.velocity.x
+		) > 5.0
+	):
 		if is_crouching:
 			target_noise = float(
-				player.get("crouch_noise_radius")
+				player.get(
+					"crouch_noise_radius"
+				)
 			)
 
 		elif is_sprinting:
@@ -170,7 +301,9 @@ func update_noise(delta: float) -> void:
 
 		else:
 			target_noise = float(
-				player.get("walk_noise_radius")
+				player.get(
+					"walk_noise_radius"
+				)
 			)
 
 	displayed_noise = move_toward(
@@ -185,15 +318,20 @@ func update_noise(delta: float) -> void:
 
 
 func update_noise_color() -> void:
-	var fill_style: StyleBoxFlat = StyleBoxFlat.new()
+	var fill_style: StyleBoxFlat = (
+		StyleBoxFlat.new()
+	)
 
 	var maximum_noise: float = maxf(
-		float(noise_bar.max_value),
+		float(
+			noise_bar.max_value
+		),
 		1.0
 	)
 
 	var noise_ratio: float = (
-		displayed_noise / maximum_noise
+		displayed_noise
+		/ maximum_noise
 	)
 
 	if noise_ratio < 0.4:
@@ -237,13 +375,21 @@ func update_weapon() -> void:
 
 	weapon_label.text = "PISTOL"
 
-	if pistol.has_method("get_ammo_text"):
-		ammo_label.text = pistol.get_ammo_text()
+	if pistol.has_method(
+		"get_ammo_text"
+	):
+		ammo_label.text = str(
+			pistol.call(
+				"get_ammo_text"
+			)
+		)
 
 
 func update_status() -> void:
 	var is_down: bool = bool(
-		player.get("is_down")
+		player.get(
+			"is_down"
+		)
 	)
 
 	if status_label.visible == is_down:
@@ -262,5 +408,10 @@ func update_status() -> void:
 
 
 func update_clock() -> void:
-	day_label.text = WorldClock.get_day_text()
-	time_label.text = WorldClock.get_time_text()
+	day_label.text = (
+		WorldClock.get_day_text()
+	)
+
+	time_label.text = (
+		WorldClock.get_time_text()
+	)

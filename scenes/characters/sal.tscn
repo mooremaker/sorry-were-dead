@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://uifk13sbhq1" path="res://scripts/characters/sal_controller.gd" id="1_2ukly"]
 [ext_resource type="PackedScene" uid="uid://cg82vxjnh242c" path="res://scenes/weapons/pistol.tscn" id="2_7eqog"]
 [ext_resource type="PackedScene" uid="uid://cda6rqkl51pk0" path="res://scenes/weapons/pizza_cutter_glaive.tscn" id="3_q4k7x"]
+[ext_resource type="Script" uid="uid://d1wen6vaaohl2" path="res://scripts/systems/inventory_component.gd" id="4_51vmh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xnnic"]
 size = Vector2(20, 40)
@@ -28,4 +29,8 @@ color = Color(1, 0.8784314, 0.7411765, 1)
 
 [node name="PizzaCutterGlaive" parent="WeaponSocket" unique_id=765112822 instance=ExtResource("3_q4k7x")]
 
+[node name="Inventory" type="Node" parent="." unique_id=132119974]
+script = ExtResource("4_51vmh")
+
 [node name="Camera2D" type="Camera2D" parent="." unique_id=914134441]
+offset = Vector2(0, -70)
